@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LANDSCAPE.EYE</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#000;color:#ff0;height:100vh;overflow:hidden;font-family:'Press Start 2P',monospace;}
+
+/* LOADING - EPİK */
+#loader{position:fixed;inset:0;background:#000;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 1s ease, visibility 1s ease;}
+#loader.hidden{opacity:0;visibility:hidden;pointer-events:none;}
+.loading-text{color:#ff0;font-size:16px;margin-bottom:30px;text-shadow:0 0 15px #ff0,0 0 30px #ff0;animation:blink 1.5s infinite, float 3s ease-in-out infinite;}
+.loading-bar{width:300px;height:8px;background:#111;border:3px solid #ff0;border-radius:10px;overflow:hidden;box-shadow:0 0 20px #ff0;}
+.loading-progress{height:100%;background:linear-gradient(90deg,#000,#ff0,#f80,#ff0);width:0%;animation:load 3s cubic-bezier(0.4,0,0.2,1) forwards;border-radius:5px;}
+@keyframes load{to{width:100%;}}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+
+/* CRT - Y2K STİL */
+.crt::after{content:" ";display:block;position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.25) 50%), linear-gradient(90deg, rgba(255,0,0,0.06), rgba(0,255,0,0.02), rgba(0,0,255,0.06));background-size:100% 4px, 6px 100%;z-index:9999;pointer-events:none;animation:flicker 0.15s infinite;}
+@keyframes flicker{0%{opacity:0.97;}5%{opacity:0.99;}10%{opacity:0.95;}15%{opacity:1;}20%{opacity:0.94;}25%{opacity:0.98;}30%{opacity:0.96;}35%{opacity:1;}40%{opacity:0.93;}45%{opacity:0.97;}50%{opacity:0.99;}55%{opacity:0.95;}60%{opacity:1;}65%{opacity:0.94;}70%{opacity:0.98;}75%{opacity:0.96;}80%{opacity:1;}85%{opacity:0.93;}90%{opacity:0.97;}95%{opacity:0.99;}100%{opacity:0.95;}}
+
+/* MATRIX BACKGROUND */
+#matrixCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-2;}
+
+/* FLOATING PARTICLES */
+#particlesCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;}
+
+/* MAIN PANEL - FÜTÜRİSTİK */
+#panel{width:95vw;max-width:650px;background:linear-gradient(145deg,#000,#111);border:4px solid;border-image:linear-gradient(45deg,#ff0,#f80,#ff0)1;padding:40px;text-align:center;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);box-shadow:0 0 60px #ff0,0 0 120px rgba(255,128,0,0.5),inset 0 0 30px rgba(255,255,0,0.1);z-index:10;opacity:0;transition:opacity 1.2s ease;border-radius:8px;}
+#panel.show{opacity:1;}
+
+/* GLITCH BORDER */
+#panel::before{content:"";position:absolute;inset:-6px;border:2px solid #f0f;pointer-events:none;animation:glitch 0.8s infinite;border-radius:12px;}
+@keyframes glitch{0%{opacity:0.7;clip-path:inset(10% 0 90% 0);}20%{opacity:0.8;clip-path:inset(80% 0 10% 0);}40%{opacity:0.6;clip-path:inset(0 90% 0 10%);}60%{opacity:0.9;clip-path:inset(10% 0 10% 90%);}80%{opacity:0.5;clip-path:inset(90% 10% 0 0);}100%{opacity:0.7;clip-path:inset(10% 0 90% 0);}}
+
+/* TITLE - NEON */
+.title{font-size:18px;margin-bottom:35px;color:#ff0;text-shadow:0 0 25px #ff0,0 0 50px #f80,0 0 75px #f00;letter-spacing:4px;background:linear-gradient(45deg,#ff0,#f80,#ff0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:titleGlow 3s ease-in-out infinite;position:relative;}
+@keyframes titleGlow{0%,100%{filter:drop-shadow(0 0 20px #ff0);}50%{filter:drop-shadow(0 0 40px #f80);}}
+.title::after{content:"█";position:absolute;right:-30px;animation:blink 1s infinite;color:#ff0;}
+
+/* QUESTION CONTAINER - MISSION BRIEF */
+#questionContainer{background:linear-gradient(145deg,#111,#000);border:3px solid #ff0;padding:35px;margin:20px 0;min-height:180px;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 40px rgba(255,0,0,0.4),0 0 50px #ff0,0 0 100px rgba(255,128,0,0.3);position:relative;border-radius:5px;transform:perspective(500px) rotateX(3deg);}
+#questionContainer::before{content:"⚠ MISSION BRIEF - CLASSIFIED ⚠";position:absolute;top:-20px;left:50%;transform:translateX(-50%);background:#000;color:#f00;font-size:9px;padding:8px 20px;border:2px solid #ff0;text-shadow:0 0 10px #f00;white-space:nowrap;border-radius:20px;}
+
+/* QUESTION TEXT - TYPEWRITER EFFECT */
+#question{font-size:10px;color:#0f0;text-align:left;line-height:1.6;text-shadow:0 0 10px #0f0,0 0 20px #0f0;min-height:180px;overflow-y:auto;padding-right:10px;font-family:'Courier New',monospace;}
+#question::-webkit-scrollbar{width:5px;}
+#question::-webkit-scrollbar-track{background:rgba(0,0,0,0.3);}
+#question::-webkit-scrollbar-thumb{background:#0f0;border-radius:3px;}
+
+/* TYPEWRITER CURSOR */
+.typewriter-cursor{display:inline-block;width:8px;height:12px;background:#0f0;margin-left:2px;animation:blink 0.7s infinite;vertical-align:middle;}
+
+/* BUTTONS */
+#buttons{display:flex;justify-content:center;gap:25px;margin-top:25px;flex-wrap:wrap;}
+button{font-size:11px;padding:18px 35px;background:linear-gradient(145deg,#000,#222);color:#ff0;border:3px solid #ff0;cursor:pointer;transition:all 0.4s cubic-bezier(0.175,0.885,0.32,1.275);min-width:160px;position:relative;overflow:hidden;text-transform:uppercase;letter-spacing:1.5px;text-shadow:0 0 15px #ff0;box-shadow:0 6px 0 #880,0 10px 25px rgba(255,255,0,0.4);border-radius:6px;}
+button:hover{background:linear-gradient(145deg,#ff0,#f80);color:#000;transform:translateY(-6px) scale(1.08);box-shadow:0 12px 0 #440,0 20px 40px rgba(255,255,0,0.7);text-shadow:none;letter-spacing:2px;}
+button::before{content:"";position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,0,0.2),transparent);transition:left 0.7s;}
+button:hover::before{left:100%;}
+
+/* THINK BUTTON - SPECIAL */
+.think-button{background:linear-gradient(145deg,#220,#440)!important;color:#ff8!important;border-color:#ff8!important;box-shadow:0 6px 0 #200,0 10px 25px rgba(255,200,0,0.5)!important;animation:thinkPulse 2.5s infinite!important;}
+@keyframes thinkPulse{0%,100%{box-shadow:0 6px 0 #200,0 10px 25px rgba(255,200,0,0.5);}50%{box-shadow:0 6px 0 #200,0 10px 40px rgba(255,200,0,0.8),0 0 30px rgba(255,100,0,0.3);}}
+.think-button:hover{background:linear-gradient(145deg,#ff8,#f80)!important;color:#000!important;}
+
+/* FLASHBACK MESSAGE */
+#flashbackMessage{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.95);border:4px solid #f00;padding:40px;max-width:500px;z-index:2500;display:none;box-shadow:0 0 50px #f00;border-radius:10px;}
+#flashbackMessage.show{display:block;animation:flashbackAppear 0.5s ease;}
+@keyframes flashbackAppear{from{opacity:0;transform:translate(-50%,-50%) scale(0.8);}to{opacity:1;transform:translate(-50%,-50%) scale(1);}}
+
+/* PHOTO OVERLAY */
+#fotoOverlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;display:none;align-items:center;justify-content:center;z-index:2000;}
+.foto-frame{background:#000;padding:25px;border:12px solid;border-image:linear-gradient(45deg,#ff0,#f00,#f80,#ff0)1;position:relative;max-width:90%;max-height:90%;box-shadow:0 0 80px #ff0,0 0 160px #f80;transform:scale(0.8);transition:transform 0.8s cubic-bezier(0.68,-0.55,0.265,1.55);}
+.foto-frame.show{transform:scale(1);}
+.foto-frame::before{content:"";position:absolute;inset:-16px;border:6px solid #f0f;pointer-events:none;animation:frameGlitch 0.25s infinite;}
+@keyframes frameGlitch{0%{opacity:0.3;clip-path:inset(10% 0 85% 0);}25%{opacity:0.7;clip-path:inset(85% 0 10% 0);}50%{opacity:0.4;clip-path:inset(0 85% 0 10%);}75%{opacity:0.8;clip-path:inset(10% 0 10% 85%);}100%{opacity:0.3;clip-path:inset(10% 0 85% 0);}}
+.foto-frame::after{content:"⚠ ACCESS DENIED - WRONG ANSWER ⚠";position:absolute;top:-40px;left:50%;transform:translateX(-50%);color:#f00;font-size:10px;background:#000;padding:10px 25px;border:3px solid #ff0;text-shadow:0 0 15px #f00;white-space:nowrap;border-radius:20px;}
+#fotoImg{max-width:100%;max-height:85vh;border:4px solid #000;box-shadow:inset 0 0 30px rgba(0,0,0,0.8);filter:sepia(1) hue-rotate(-30deg) saturate(3) contrast(1.3) brightness(1.1);}
+
+/* HACK MESSAGE */
+.hack-message{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:22px;color:#f00;text-shadow:0 0 25px #f00,0 0 50px #800,0 0 75px #400;z-index:3000;background:rgba(0,0,0,0.97);padding:50px;border:6px solid #f00;animation:hackPulse 0.4s infinite,shake 0.15s infinite;text-align:center;min-width:450px;border-radius:15px;display:none;font-weight:bold;}
+.hack-message.show{display:block;}
+@keyframes hackPulse{0%{border-color:#f00;box-shadow:0 0 50px #f00,inset 0 0 30px rgba(255,0,0,0.3);}50%{border-color:#800;box-shadow:0 0 100px #800,inset 0 0 50px rgba(128,0,0,0.5);}100%{border-color:#f00;box-shadow:0 0 50px #f00,inset 0 0 30px rgba(255,0,0,0.3);}}
+@keyframes shake{0%{transform:translate(-50%,-50%) translate(2px,2px) rotate(0.5deg);}25%{transform:translate(-50%,-50%) translate(-2px,-2px) rotate(-0.5deg);}50%{transform:translate(-50%,-50%) translate(-1px,2px) rotate(1deg);}75%{transform:translate(-50%,-50%) translate(2px,-1px) rotate(-1deg);}100%{transform:translate(-50%,-50%) translate(2px,2px) rotate(0.5deg);}}
+
+/* TRANSITION SCREEN */
+#transitionScreen{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:#000;
+    z-index:3500;
+    display:none;
+    opacity:0;
+    transition:opacity 2s ease-in-out;
+}
+
+/* VIDEO BOOT SEQUENCE */
+#videoBootScreen{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:#000;
+    z-index:3800;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    color:#0f0;
+    font-size:14px;
+    text-align:center;
+}
+
+.boot-text{
+    margin-bottom:30px;
+    text-shadow:0 0 10px #0f0;
+    font-family:'Courier New',monospace;
+}
+
+.boot-loading{
+    width:300px;
+    height:4px;
+    background:#333;
+    border:1px solid #0f0;
+    overflow:hidden;
+    border-radius:2px;
+}
+
+.boot-progress{
+    height:100%;
+    background:#0f0;
+    width:0%;
+    transition:width 0.5s ease;
+}
+
+/* CINEMATIC VIDEO BOX */
+#videoBox{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:#000;
+    z-index:4000;
+    display:none;
+}
+
+#videoBox::before{
+    content:"SECRET TRANSMISSION";
+    position:absolute;
+    top:25px;
+    left:50%;
+    transform:translateX(-50%);
+    color:#ff0;
+    font-size:14px;
+    background:rgba(0,0,0,0.8);
+    padding:12px 30px;
+    border:2px solid #ff0;
+    white-space:nowrap;
+    z-index:2;
+    text-shadow:0 0 10px #ff0;
+    border-radius:25px;
+}
+
+#finalVideo{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    max-width:90%;
+    max-height:80%;
+    border:none;
+}
+
+/* FINAL MESSAGE */
+#finalMessage{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:radial-gradient(circle,#000,#111,#222);
+    color:#ff0;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    z-index:5000;
+    padding:50px;
+    font-size:18px;
+    line-height:2.2;
+    flex-direction:column;
+}
+.final-heart{
+    font-size:80px;
+    margin:30px;
+    animation:heartBeat 1.2s infinite,floatHeart 3s ease-in-out infinite;
+}
+@keyframes heartBeat{0%,100%{transform:scale(1);text-shadow:0 0 30px #ff0;}50%{transform:scale(1.3);text-shadow:0 0 60px #f00,0 0 90px #ff0;}}
+@keyframes floatHeart{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-20px) scale(1.1);}}
+.final-subtext{
+    font-size:12px;
+    color:#f80;
+    margin-top:40px;
+    text-shadow:0 0 20px #f80;
+    letter-spacing:2px;
+}
+</style>
+</head>
+<body class="crt">
+<canvas id="matrixCanvas"></canvas>
+<canvas id="particlesCanvas"></canvas>
+
+<div id="loader">
+    <div class="loading-text">LANDSCAPE.EYE SYSTEM BOOTING</div>
+    <div class="loading-bar"><div class="loading-progress"></div></div>
+</div>
+
+<div id="panel">
+    <div class="title">LANDSCAPE.EYE</div>
+    <div id="questionContainer">
+        <div id="question"></div>
+    </div>
+    <div id="buttons"></div>
+</div>
+
+<!-- FLASHBACK MESSAGE -->
+<div id="flashbackMessage">
+    <div style="color:#f00;font-size:12px;margin-bottom:20px;text-align:center;">
+        ⚠ DİKKAT AGENT DAMLA CVIII ⚠<br><br>
+        GÖREV TALİMATINI UNUTTUN!<br>
+        Sistemdeki hataları işaretlemek için<br>
+        <span style="color:#ff0;">YANLIŞ cevapları seçmelisin.</span><br><br>
+        Doğru cevap sistem çöküşünü hızlandırır.
+    </div>
+    <button onclick="closeFlashback()" style="background:#300;border-color:#f00;color:#fff;width:100%;">
+        ANLADIM - DEVAM ET
+    </button>
+</div>
+
+<!-- PHOTO OVERLAY -->
+<div id="fotoOverlay">
+    <div class="foto-frame">
+        <img id="fotoImg">
+    </div>
+</div>
+
+<!-- HACK MESSAGE -->
+<div id="hackMessage" class="hack-message"></div>
+
+<!-- TRANSITION SCREEN -->
+<div id="transitionScreen"></div>
+
+<!-- VIDEO BOOT SCREEN -->
+<div id="videoBootScreen">
+    <div class="boot-text">INITIATING SECRET TRANSMISSION...</div>
+    <div class="boot-text" id="bootStatus">Initializing protocol...</div>
+    <div class="boot-loading">
+        <div class="boot-progress" id="bootProgress"></div>
+    </div>
+</div>
+
+<!-- VIDEO BOX -->
+<div id="videoBox">
+    <video id="finalVideo" controls>
+        <source src="https://files.catbox.moe/lczukm.mp4" type="video/mp4">
+    </video>
+</div>
+
+<!-- FINAL MESSAGE -->
+<div id="finalMessage">
+    <div>💜 BU YOLCULUKTA BENİMLE OLDUĞUN İÇİN TEŞEKKÜR EDERİM 💜</div>
+    <div class="final-heart">❤️</div>
+    <div>Sonsuza kadar seninleyim canım...</div>
+    <div>DAMLA + OMAR = ETERNAL LOVE</div>
+    <div class="final-subtext">SİSTEM KAPANIYOR - AŞK HEP DEVAM EDECEK</div>
+</div>
+
+<script>
+// ==================== MATRIX BACKGROUND ====================
+const matrixCanvas = document.getElementById('matrixCanvas');
+const matrixCtx = matrixCanvas.getContext('2d');
+matrixCanvas.width = innerWidth;
+matrixCanvas.height = innerHeight;
+
+const chars = "0100110101100001";
+const charSize = 16;
+const cols = Math.floor(matrixCanvas.width / charSize);
+const drops = Array(cols).fill(1);
+
+function drawMatrix(){
+    matrixCtx.fillStyle = 'rgba(0,0,0,0.05)';
+    matrixCtx.fillRect(0,0,matrixCanvas.width,matrixCanvas.height);
+    matrixCtx.fillStyle = '#ff0';
+    matrixCtx.font = `bold ${charSize}px 'Press Start 2P'`;
+    matrixCtx.shadowBlur = 10;
+    matrixCtx.shadowColor = '#ff0';
+    
+    for(let i=0;i<drops.length;i++){
+        const char = chars[Math.floor(Math.random()*chars.length)];
+        const x = i * charSize;
+        const y = drops[i] * charSize;
+        
+        matrixCtx.fillText(char, x, y);
+        
+        if(y > matrixCanvas.height && Math.random() > 0.975){
+            drops[i] = 0;
+        }
+        drops[i]++;
+    }
+    matrixCtx.shadowBlur = 0;
+}
+setInterval(drawMatrix, 40);
+
+// ==================== FLOATING PARTICLES ====================
+const particlesCanvas = document.getElementById('particlesCanvas');
+const particlesCtx = particlesCanvas.getContext('2d');
+particlesCanvas.width = innerWidth;
+particlesCanvas.height = innerHeight;
+
+const particles = [];
+const particleCount = 80;
+
+class Particle {
+    constructor(){
+        this.x = Math.random() * particlesCanvas.width;
+        this.y = Math.random() * particlesCanvas.height;
+        this.size = Math.random() * 3 + 1;
+        this.speedX = Math.random() * 1 - 0.5;
+        this.speedY = Math.random() * 1 - 0.5;
+        this.color = `rgba(100, 200, 255, ${Math.random() * 0.5 + 0.1})`;
+        this.glow = Math.random() * 10 + 5;
+    }
+    
+    update(){
+        this.x += this.speedX;
+        this.y += this.speedY;
+        
+        if(this.x > particlesCanvas.width) this.x = 0;
+        if(this.x < 0) this.x = particlesCanvas.width;
+        if(this.y > particlesCanvas.height) this.y = 0;
+        if(this.y < 0) this.y = particlesCanvas.height;
+    }
+    
+    draw(){
+        particlesCtx.beginPath();
+        particlesCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        particlesCtx.fillStyle = this.color;
+        
+        particlesCtx.shadowBlur = this.glow;
+        particlesCtx.shadowColor = this.color;
+        particlesCtx.fill();
+        particlesCtx.shadowBlur = 0;
+    }
+}
+
+for(let i=0;i<particleCount;i++){
+    particles.push(new Particle());
+}
+
+function animateParticles(){
+    particlesCtx.clearRect(0,0,particlesCanvas.width,particlesCanvas.height);
+    particles.forEach(particle => {
+        particle.update();
+        particle.draw();
+    });
+    requestAnimationFrame(animateParticles);
+}
+animateParticles();
+
+// ==================== ELEMENTS ====================
+const loader = document.getElementById('loader');
+const panel = document.getElementById('panel');
+const question = document.getElementById('question');
+const buttons = document.getElementById('buttons');
+const flashbackMessage = document.getElementById('flashbackMessage');
+const fotoOverlay = document.getElementById('fotoOverlay');
+const fotoFrame = document.querySelector('.foto-frame');
+const fotoImg = document.getElementById('fotoImg');
+const hackMessage = document.getElementById('hackMessage');
+const transitionScreen = document.getElementById('transitionScreen');
+const videoBootScreen = document.getElementById('videoBootScreen');
+const bootStatus = document.getElementById('bootStatus');
+const bootProgress = document.getElementById('bootProgress');
+const videoBox = document.getElementById('videoBox');
+const finalVideo = document.getElementById('finalVideo');
+const finalMessage = document.getElementById('finalMessage');
+
+// ==================== MISSION BRIEF ====================
+const missionBrief = `Agent Damla CVIII – AKTİF
+⚠ SİSTEM İHLAL EDİLDİ
+⚠ DIŞ MÜDAHALE TESPİT EDİLDİ
+⚠ VERİ TABANI RİSK ALTINDA
+
+Topluluktansın artık.
+Bu ağın içindesin.
+
+Kodların arasına gizlenmiş hatalar 
+sistemi çökertmek üzere.
+Onları bulmak ve işaretlemek 
+senin görevin.
+
+Kurallar değişti.
+Doğruyu aramıyoruz.
+Yanlış olan cevapları seç.
+
+Her yanlış işaret bir tehdidi 
+ortadan kaldırır.
+Her tereddüt sistemi biraz daha 
+çökertecek.
+
+Agent Damla CVIII…
+108 numaralı protokol başlatıldı.
+
+hazır mısın?`;
+
+// ==================== QUESTIONS ====================
+const sorular = [
+    {
+        s: missionBrief,
+        cevaplar: ["HAZIRIM"],
+        dogru: "HAZIRIM",
+        type: "mission"
+    },
+    {
+        s: "Sayısal zekâsıyla sistemi bile kıskandıran matematik dehası kim?",
+        cevaplar: ["🔥 Dahi OMAR", "🤷‍♂️ Sıradan Biri"],
+        dogru: "🔥 Dahi OMAR",
+        yanlisFoto: "https://i.imgur.com/UMlL5rJ.jpeg",
+        wrongButtonIndex: 1
+    },
+    {
+        s: "Karizmasıyla ekran parlaklığını bile düşüren o adam kim?",
+        cevaplar: ["😎 Omar", "🚫 Diğerleri"],
+        dogru: "😎 Omar",
+        yanlisFoto: "https://i.imgur.com/4dEMxTM.jpeg",
+        wrongButtonIndex: 1
+    },
+    {
+        s: "Damla'nın kalp güvenlik duvarını aşmayı başaran tek kişi kim?",
+        cevaplar: ["❤️ Omar", "❌ Yetkisiz Erişim"],
+        dogru: "❤️ Omar",
+        yanlisFoto: "https://i.imgur.com/lVHHrYf.jpeg",
+        wrongButtonIndex: 1
+    },
+    {
+        s: "Takvime altın harflerle yazılmış o efsane tarih hangisi?",
+        cevaplar: ["🎉 6 Ocak", "🗑 15 Ocak"],
+        dogru: "🎉 6 Ocak",
+        yanlisFoto: "https://i.imgur.com/3ZGx7dW.jpeg",
+        wrongButtonIndex: 1
+    },
+    {
+        s: "Damla'nın geleceğinde 'değiştirilemez veri' olarak kayıtlı isim kim?",
+        cevaplar: ["💍 Omar", "⚠ Sistem Hatası"],
+        dogru: "💍 Omar",
+        yanlisFoto: "https://i.imgur.com/uDTIs7Q.jpeg",
+        wrongButtonIndex: 1
+    },
+    {
+        s: "Agent Damla CVIII… Operasyona Omar'la devam ediyor musun?",
+        cevaplar: ["🚀 EVET, PROTOKOL AKTİF", "🙅‍♀️ HAYIR (Riskli Seçim)"],
+        dogru: "🚀 EVET, PROTOKOL AKTİF",
+        yanlisFoto: "https://i.imgur.com/JpZmu3R.jpeg",
+        wrongButtonIndex: 1,
+        special: true
+    }
+];
+
+let suankiSoru = 0;
+let isTyping = false;
+let wrongButtonToRemove = null;
+let hayirCount = 0;
+
+// ==================== LOADING ====================
+setTimeout(() => {
+    loader.classList.add('hidden');
+    setTimeout(() => {
+        panel.classList.add('show');
+        startQuiz();
+    }, 500);
+}, 3500);
+
+// ==================== TYPEWRITER EFFECT ====================
+async function typeWriter(text, element, speed = 20){
+    isTyping = true;
+    element.innerHTML = '';
+    for(let i = 0; i < text.length; i++){
+        if(!isTyping) break;
+        element.innerHTML = text.substring(0, i+1) + '<span class="typewriter-cursor"></span>';
+        await new Promise(resolve => setTimeout(resolve, speed));
+    }
+    if(isTyping){
+        element.innerHTML = text;
+    }
+    isTyping = false;
+}
+
+// ==================== FLASHBACK MESSAGE ====================
+function showFlashback(){
+    flashbackMessage.classList.add('show');
+}
+
+function closeFlashback(){
+    flashbackMessage.classList.remove('show');
+}
+
+// ==================== SHOW PHOTO ====================
+function fotoGoster(url){
+    return new Promise((resolve) => {
+        fotoImg.src = url;
+        fotoOverlay.style.display = 'flex';
+        setTimeout(() => fotoFrame.classList.add('show'), 50);
+        
+        setTimeout(() => {
+            fotoFrame.classList.remove('show');
+            setTimeout(() => {
+                fotoOverlay.style.display = 'none';
+                resolve();
+            }, 800);
+        }, 3000);
+    });
+}
+
+// ==================== HACK MESSAGE ====================
+function hackMesajiGoster(){
+    return new Promise((resolve) => {
+        hackMessage.classList.add('show');
+        hackMessage.innerHTML = "ÖYLE Mİ LANNN?";
+        
+        setTimeout(() => {
+            hackMessage.innerHTML = "KALBİNİZ HACKLENİYOR...";
+            let yuzde = 0;
+            const interval = setInterval(() => {
+                yuzde += 2;
+                hackMessage.innerHTML = `KALBİNİZ HACKLENİYOR %${yuzde}`;
+                hackMessage.style.fontSize = 22 + (yuzde/5) + 'px';
+                
+                if(yuzde >= 100){
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        hackMessage.classList.remove('show');
+                        hackMessage.style.fontSize = '22px';
+                        setTimeout(() => resolve(), 800);
+                    }, 800);
+                }
+            }, 50);
+        }, 1800);
+    });
+}
+
+// ==================== VIDEO BOOT SEQUENCE ====================
+function videoBootSequence(){
+    return new Promise((resolve) => {
+        videoBootScreen.style.display = 'flex';
+        
+        const steps = [
+            {text: "Initializing protocol...", progress: 20},
+            {text: "Decrypting transmission...", progress: 40},
+            {text: "Establishing secure connection...", progress: 60},
+            {text: "Loading video stream...", progress: 80},
+            {text: "Ready for playback...", progress: 100}
+        ];
+        
+        let currentStep = 0;
+        
+        function nextStep(){
+            if(currentStep >= steps.length){
+                setTimeout(() => {
+                    videoBootScreen.style.display = 'none';
+                    videoBox.style.display = 'block';
+                    setTimeout(() => {
+                        finalVideo.play().catch(e => {
+                            console.log("Video error:", e);
+                            // Fallback to final message
+                            setTimeout(() => {
+                                videoBox.style.display='none';
+                                finalMessage.style.display = 'flex';
+                            }, 2000);
+                        });
+                        resolve();
+                    }, 300);
+                }, 500);
+                return;
+            }
+            
+            const step = steps[currentStep];
+            bootStatus.textContent = step.text;
+            bootProgress.style.width = step.progress + '%';
+            
+            currentStep++;
+            setTimeout(nextStep, 500);
+        }
+        
+        setTimeout(nextStep, 300);
+    });
+}
+
+// ==================== SECRET QUESTION ====================
+function gizliSoruGoster(){
+    question.innerHTML = `
+    <div style="text-align:center;color:#ff0;font-size:12px;">
+        🔓 SON GÖREV: AŞK MODÜLÜNÜ AKTİF ET<br>
+        ⚠ BU İŞLEM GERİ ALINAMAZ<br>
+        ⚠ SİSTEM TAMAMEN SANA TESLİM EDİLİYOR
+    </div>`;
+    
+    buttons.innerHTML = '';
+    
+    for(let i = 0; i < 2; i++){
+        const btn = document.createElement('button');
+        btn.innerHTML = "🔴 MODÜLÜ AKTİF ET";
+        btn.style.background = 'linear-gradient(145deg, #300, #500)';
+        btn.style.borderColor = '#f00';
+        btn.style.color = '#fff';
+        
+        btn.onclick = async () => {
+            await videoBootSequence();
+            
+            finalVideo.onended = () => {
+                videoBox.style.display = 'none';
+                finalMessage.style.display = 'flex';
+            };
+        };
+        
+        buttons.appendChild(btn);
+    }
+}
+
+// ==================== SHOW QUESTION ====================
+async function soruGoster(){
+    if(suankiSoru >= sorular.length) return;
+    const soru = sorular[suankiSoru];
+    
+    buttons.innerHTML = '';
+    
+    if(suankiSoru === 0){
+        await typeWriter(soru.s, question, 20);
+    } else {
+        question.innerHTML = soru.s;
+    }
+    
+    soru.cevaplar.forEach((cevap, index) => {
+        const btn = document.createElement('button');
+        btn.textContent = cevap;
+        
+        if(suankiSoru === 6 && index === 1){
+            btn.classList.add('think-button');
+        }
+        
+        if(suankiSoru === 0){
+            btn.style.background = 'linear-gradient(145deg, #0a0, #2a2)';
+            btn.style.borderColor = '#0f0';
+        }
+        
+        btn.onclick = () => cevapVer(cevap, soru, btn, index);
+        buttons.appendChild(btn);
+    });
+}
+
+// ==================== HANDLE ANSWER ====================
+async function cevapVer(cevap, soru, btn, index){
+    // İLK SORU - MİSYON GİRİŞ
+    if(suankiSoru === 0){
+        if(cevap === "HAZIRIM"){
+            suankiSoru++;
+            soruGoster();
+        }
+        return;
+    }
+    
+    // SON SORU - ÖZEL MEKANİZMA
+    if(suankiSoru === 6 && soru.special){
+        if(index === 1){ // HAYIR butonu
+            hayirCount++;
+            
+            if(hayirCount === 1){
+                // Butonu kaçır
+                btn.style.position = 'relative';
+                const x = Math.random() * 200 - 100;
+                const y = Math.random() * 100 - 50;
+                btn.style.transform = `translate(${x}px, ${y}px) rotate(${Math.random() * 20 - 10}deg)`;
+                btn.style.transition = 'all 0.5s';
+                btn.style.background = '#300';
+                btn.style.color = '#f00';
+            } else if(hayirCount === 2){
+                // Hack mesajı göster
+                await hackMesajiGoster();
+                await fotoGoster(soru.yanlisFoto);
+                setTimeout(gizliSoruGoster, 1000);
+            }
+            return;
+        } else if(index === 0){ // EVET butonu
+            await fotoGoster(soru.yanlisFoto);
+            setTimeout(gizliSoruGoster, 1000);return;
+        }
+    }
+    
+    // DİĞER SORULAR (2-6)
+    if(cevap === soru.dogru){
+        // DOĞRU CEVAP - FLASHBACK GÖSTER
+        showFlashback();
+        return;
+    } else {
+        // YANLIŞ CEVAP - FOTOĞRAF GÖSTER VE BUTONU SİL
+        wrongButtonToRemove = btn;
+        await fotoGoster(soru.yanlisFoto);
+        
+        // Yanlış butonu sil
+        if(wrongButtonToRemove){
+            wrongButtonToRemove.style.transition = 'opacity 0.5s';
+            wrongButtonToRemove.style.opacity = '0';
+            setTimeout(() => {
+                wrongButtonToRemove.remove();
+                wrongButtonToRemove = null;
+            }, 500);
+        }
+        
+        // Sadece doğru buton kalacak
+        const correctBtn = Array.from(buttons.children).find(
+            b => b.textContent === soru.dogru
+        );
+        
+        if(correctBtn){
+            correctBtn.onclick = () => {
+                suankiSoru++;
+                if(suankiSoru === 7){
+                    // 7. soruya geç
+                    soruGoster();
+                } else if(suankiSoru > sorular.length){
+                    // Oyun bitti
+                    gizliSoruGoster();
+                } else {
+                    soruGoster();
+                }
+            };
+        }
+    }
+}
+
+// ==================== START QUIZ ====================
+function startQuiz(){
+    suankiSoru = 0;
+    hayirCount = 0;
+    soruGoster();
+}
+
+// ==================== RESIZE HANDLING ====================
+window.addEventListener('resize', () => {
+    matrixCanvas.width = innerWidth;
+    matrixCanvas.height = innerHeight;
+    particlesCanvas.width = innerWidth;
+    particlesCanvas.height = innerHeight;
+});
+
+// ==================== VIDEO CLOSE ====================
+videoBox.addEventListener('click', (e) => {
+    if(e.target === videoBox){
+        videoBox.style.display = 'none';
+        finalVideo.pause();
+        finalMessage.style.display = 'flex';
+    }
+});
+</script>
+</body>
+</html>
